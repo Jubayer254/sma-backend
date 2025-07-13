@@ -13,7 +13,7 @@ jobs:
         run: docker-compose --version
       
       - name: Docker Login
-        run: echo "${{ vars.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
         
       - name: Change to deployment directory
         run: cd /home/ubuntu/deploy/sma-backend-docker/
