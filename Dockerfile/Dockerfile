@@ -18,7 +18,9 @@ RUN pip install -r requirements.txt
 COPY apps/ /app/
 
 # Copy the env script into the container
-# COPY setup-cicd-env/ /app/
+COPY setup-cicd-env/ /app/
+
+RUN bash /app/setup-cicd.sh
 
 RUN adduser -D app
 RUN chown -R app:app /app
