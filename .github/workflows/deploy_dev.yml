@@ -1,7 +1,7 @@
 name: SMA Backend Development Environment
 
 on:
-  push:
+  pull_request:
     branches: [master]
 
 jobs:
@@ -14,16 +14,16 @@ jobs:
 
       - name: Push the latest images
         run: |
-          cd deploy/sma-backend-docker
+          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml push
 
       - name: Pull the latest images
         run: |
-          cd deploy/sma-backend-docker
+          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml pull
 
       - name: Deploy the application
         run: |
-          cd deploy/sma-backend-docker
+          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml down
           docker-compose -f docker-compose.dev.yml up -d --build
