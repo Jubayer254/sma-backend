@@ -5,20 +5,34 @@ on:
     branches: [master]
 
 jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: master
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
+      
+      - name: Build and Push Docker images
+        run: |
+          docker-compose -f docker-compose.dev.yml build
+          docker-compose -f docker-compose.dev.yml push
+
   deploy:
     runs-on: bitnova-runner
     environment: master
-
+    needs: build-and-push
+    
     steps:
       - name: Check Docker Compose Version
         run: docker-compose --version
       
       - name: Docker Login
-        run: echo "${{ vars.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
         
-      - name: Change to deployment directory
-        run: cd /home/ubuntu/deploy/sma-backend-docker/
-
       - name: Pull the latest images
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
