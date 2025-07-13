@@ -22,11 +22,6 @@ ROOT_URLCONF = "sma_backend.urls"
 
 WSGI_APPLICATION = "sma_backend.wsgi.application"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = "static/"
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -41,5 +36,6 @@ from sma_backend.conf.installed_apps import INSTALLED_APPS
 from sma_backend.conf.middleware import MIDDLEWARE
 from sma_backend.conf.rest_confs import REST_FRAMEWORK, SIMPLE_JWT
 from sma_backend.conf.security import *
+from sma_backend.conf.static import *
 from sma_backend.conf.templates import TEMPLATES
 from sma_backend.conf.timezone_conf import *

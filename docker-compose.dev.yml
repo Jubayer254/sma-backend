@@ -1,0 +1,50 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile/Dockerfile
+      tags:
+        - jubayer254/sma_backend_dev:0.0.1
+        - jubayer254/sma_backend_dev:latest
+      args:
+        APP_VERSION: 0.0.1
+
+    image: jubayer254/sma_backend_dev:0.0.1  
+    container_name: sma_backend_dev
+    command: >
+      sh -c "
+        python manage.py collectstatic --noinput &&
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        gunicorn --config gunicorn_config.py sma_backend.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+      "
+    expose:
+      - 8000
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+
+  nginx:
+    build:
+      context: .  # Point to the directory where your Nginx Dockerfile is located
+      dockerfile: nginx/Dockerfile
+      tags:
+        - jubayer254/sma_backend_dev_nginx:0.0.1
+        - jubayer254/sma_backend_dev_nginx:latest 
+      args:
+        APP_VERSION: 0.0.1  
+
+    image: jubayer254/sma_backend_dev_nginx:0.0.1 
+    
+    container_name: sma_backend_dev_nginx
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  media_volume:

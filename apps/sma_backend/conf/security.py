@@ -1,10 +1,16 @@
+import environ
+
+# Read .env file existing at the same directory as this file.
+env = environ.Env()
+environ.Env.read_env()
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7t3k@x^plf-z$t3#p+ze_o@u^4ydkk%z=37rx$-5ms)hd3c(!v"
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '16.176.7.48']
+ALLOWED_HOSTS = [origin.split("//")[-1].split(":")[0] for origin in str(env('ALLOWED_HOSTS')).split(',')]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
