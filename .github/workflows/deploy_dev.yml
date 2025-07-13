@@ -1,26 +1,29 @@
-name : SMA Backend Development Environment
+name: SMA Backend Development Environment
 
 on:
   pull_request:
     branches: [master]
 
 jobs:
- deploy:
+  deploy:
     runs-on: bitnova-runner
 
-    steps: Set up Docker Compose:
-      run: |
-        docker-compose --version
-    steps: push the latest images:
-      run: |
-        cd deploy/sma-backend-docker
-        docker-compose -f docker-compose.dev.yml push
-    steps: pull the latest images:
-      run: |
-        cd deploy/sma-backend-docker
-        docker-compose -f docker-compose.dev.yml pull
-    steps: deploy the application:
-      run: |
-        cd deploy/sma-backend-docker
-        docker-compose -f docker-compose.dev.yml down
-        docker-compose -f docker-compose.dev.yml up -d --build
+    steps:
+      - name: Check Docker Compose Version
+        run: docker-compose --version
+
+      - name: Push the latest images
+        run: |
+          cd deploy/sma-backend-docker
+          docker-compose -f docker-compose.dev.yml push
+
+      - name: Pull the latest images
+        run: |
+          cd deploy/sma-backend-docker
+          docker-compose -f docker-compose.dev.yml pull
+
+      - name: Deploy the application
+        run: |
+          cd deploy/sma-backend-docker
+          docker-compose -f docker-compose.dev.yml down
+          docker-compose -f docker-compose.dev.yml up -d --build
