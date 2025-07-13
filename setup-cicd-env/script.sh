@@ -5,14 +5,15 @@ mkdir -p /app/sma_backend/conf
 
 # Create .env file using GitHub environment variables
 cat > /app/sma_backend/conf/.env << EOF
-EMAIL_HOST=${EMAIL_HOST:-smtp.gmail.com}
-EMAIL_PORT=${EMAIL_PORT:-587}
-EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+EMAIL_HOST=${EMAIL_HOST}
+EMAIL_PORT=${EMAIL_PORT}
+EMAIL_USE_TLS=${EMAIL_USE_TLS}
 EMAIL_HOST_USER="${EMAIL_HOST_USER}"
 EMAIL_HOST_PASSWORD="${EMAIL_HOST_PASSWORD}"
 SECRET_KEY="${SECRET_KEY}"
 DEBUG=${DEBUG:-0}
 ALLOWED_HOSTS="${ALLOWED_HOSTS}"
+TEST="${TEST}"
 EOF
 
 # Set secure permissions
