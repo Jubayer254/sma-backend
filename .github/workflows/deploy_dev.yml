@@ -59,15 +59,25 @@ jobs:
     needs: dev-pull-from-hub
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify checkout and setup script
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+          echo "Setup directory contents:"
+          ls -la setup-cicd-env/
+          echo "Setup script details:"
+          ls -la setup-cicd-env/setup.sh
+
       - name: Prepare Environment Variables
         run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
-          
-          # Pull the latest image to ensure we have the script
-          docker-compose -f docker-compose.dev.yml pull
-          
-          # Run the setup script inside the container
-          docker-compose -f docker-compose.dev.yml run --rm your-service-name /app/setup-cicd-env/script.sh
+          echo "Making setup script executable..."
+          chmod +x setup-cicd-env/setup.sh
+          echo "Executing setup script..."
+          ./setup-cicd-env/setup.sh
 
       - name: Deploy the application
         run: |
