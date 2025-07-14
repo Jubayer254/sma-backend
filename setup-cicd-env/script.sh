@@ -6,17 +6,17 @@ APP_DIR="./sma_backend/conf"
 # Create directory if it doesn't exist
 mkdir -p "$APP_DIR"
 
-# Create .env file using GitHub environment variables
-cat > "$APP_DIR/.env" << EOF
-EMAIL_HOST=${EMAIL_HOST}
-EMAIL_PORT=${EMAIL_PORT}
-EMAIL_USE_TLS=${EMAIL_USE_TLS}
-EMAIL_HOST_USER="${EMAIL_HOST_USER}"
-EMAIL_HOST_PASSWORD="${EMAIL_HOST_PASSWORD}"
-SECRET_KEY="${SECRET_KEY}"
-DEBUG=${DEBUG:-0}
-ALLOWED_HOSTS="${ALLOWED_HOSTS}"
-TEST="${TEST}"
+# Create .env file
+cat > ./sma_backend/conf/.env << EOF
+EMAIL_HOST=${{ vars.EMAIL_HOST }}
+EMAIL_PORT=${{ vars.EMAIL_PORT }}
+EMAIL_USE_TLS=${{ vars.EMAIL_USE_TLS }}
+EMAIL_HOST_USER=${{ vars.EMAIL_HOST_USER }}
+EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+SECRET_KEY=${{ secrets.SECRET_KEY }}
+DEBUG=${{ vars.DEBUG }}
+ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }}
+TEST=${{ vars.TEST }}
 EOF
 
 # Set secure permissions
