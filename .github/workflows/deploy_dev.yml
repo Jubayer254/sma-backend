@@ -26,6 +26,7 @@ jobs:
         run: |
           chmod +x ./setup-cicd-env/script.sh
           ./setup-cicd-env/script.sh
+          cat sma_backend/conf/.env
 
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
