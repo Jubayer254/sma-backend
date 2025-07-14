@@ -1,4 +1,3 @@
-# .github/workflows/ci-cd.yml
 name: SMA Backend Development Environment
 
 on:
@@ -23,11 +22,17 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Prepare Environment Variables
+        run: |
+          chmod +x ./setup-cicd-env/script.sh
+          ./setup-cicd-env/script.sh
+
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker images
         run: docker-compose -f docker-compose.dev.yml build
+        
       - name: Push Docker images
         run: docker-compose -f docker-compose.dev.yml push
 
@@ -62,24 +67,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify checkout and setup script
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Repository contents:"
-          ls -la
-          echo "Setup directory contents:"
-          ls -la setup-cicd-env/
-          echo "Setup script details:"
-          ls -la setup-cicd-env/setup.sh
-
       - name: Prepare Environment Variables
         run: |
-          echo "Making setup script executable..."
-          chmod +x setup-cicd-env/setup.sh
-          echo "Executing setup script..."
-          ./setup-cicd-env/setup.sh
+          chmod +x ./setup-cicd-env/script.sh
+          ./setup-cicd-env/script.sh
+
+      - name: Copy docker-compose file to deployment directory
+        run: |
+          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
 
       - name: Deploy the application
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
-          docker-compose -f docker-compose.dev.yml up -d --build
+          docker-compose -f docker-compose.dev.yml down --remove-orphans
+          docker-compose -f docker-compose.dev.yml up -d
