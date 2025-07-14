@@ -10,7 +10,7 @@ jobs:
     environment: dev
 
     steps:
-      - name: bitnova-runner
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -52,6 +52,9 @@ jobs:
     needs: build-and-push-dev-image
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Install Docker Compose (if not available)
         run: |
           docker-compose --version || {
@@ -59,6 +62,27 @@ jobs:
             sudo chmod +x /usr/local/bin/docker-compose
             docker-compose --version
           }
+
+      - name: Create Environment Variables for pull
+        env:
+          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ vars.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ vars.EMAIL_HOST_PASSWORD }}
+          SECRET_KEY: ${{ vars.SECRET_KEY }}
+          DEBUG: ${{ vars.DEBUG }}
+          ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+          TEST: ${{ vars.TEST }}
+        run: |
+          chmod +x ./setup-cicd-env/script.sh
+          ./setup-cicd-env/script.sh
+          
+      - name: Copy files to deployment directory
+        run: |
+          mkdir -p /home/ubuntu/deploy/sma-backend-docker/sma_backend/conf
+          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
+          cp ./sma_backend/conf/.env /home/ubuntu/deploy/sma-backend-docker/sma_backend/conf/
 
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
@@ -72,15 +96,7 @@ jobs:
     runs-on: bitnova-runner
     environment: dev
     needs: dev-pull-from-hub
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Copy docker-compose file to deployment directory
-        run: |
-          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
-
+    steps:        
       - name: Deploy the application
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
