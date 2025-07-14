@@ -82,8 +82,13 @@ jobs:
         run: |
           cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
 
+      - name: Copy .env file to deployment directory
+        run: |
+          cp ./sma_backend/conf/.env /home/ubuntu/deploy/sma-backend-docker/.env
+
       - name: Deploy the application
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml down --remove-orphans
           docker-compose -f docker-compose.dev.yml up -d
+
