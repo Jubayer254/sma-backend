@@ -23,8 +23,6 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
-    env_file:
-      - ./sma_backend/conf/.env
 
   nginx:
     build:
