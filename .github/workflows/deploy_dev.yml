@@ -15,9 +15,16 @@ jobs:
 
       - name: Install Docker Compose
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
+          docker-compose --version || {
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+          }
+
+      - name: Clean Docker system
+        run: |
+          docker system prune -f
+          docker builder prune -f
 
       - name: Prepare Environment Variables
         env:
@@ -38,17 +45,22 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker images
-        run: docker-compose -f docker-compose.dev.yml build
+        run: |
+          export DOCKER_BUILDKIT=1
+          docker-compose -f docker-compose.dev.yml build --no-cache
         
       - name: Push Docker images
         run: docker-compose -f docker-compose.dev.yml push
 
-  dev-pull-from-hub:
+  deploy-to-dev:
     runs-on: bitnova-runner
     environment: dev
     needs: build-and-push-dev-image
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install Docker Compose (if not available)
         run: |
           docker-compose --version || {
@@ -57,29 +69,33 @@ jobs:
             docker-compose --version
           }
 
+      - name: Prepare Environment Variables
+        env:
+          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ vars.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ vars.EMAIL_HOST_PASSWORD }}
+          SECRET_KEY: ${{ vars.SECRET_KEY }}
+          DEBUG: ${{ vars.DEBUG }}
+          ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+          TEST: ${{ vars.TEST }}
+        run: |
+          chmod +x ./setup-cicd-env/script.sh
+          ./setup-cicd-env/script.sh
+
+      - name: Setup deployment directory
+        run: |
+          mkdir -p /home/ubuntu/deploy/sma-backend-docker/sma_backend/conf
+          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
+          cp ./sma_backend/conf/.env /home/ubuntu/deploy/sma-backend-docker/sma_backend/conf/
+
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Pull the latest images
+      - name: Pull and Deploy
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml pull
-
-  deploy-to-dev:
-    runs-on: bitnova-runner
-    environment: dev
-    needs: dev-pull-from-hub
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Copy docker-compose file to deployment directory
-        run: |
-          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
-
-      - name: Deploy the application
-        run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml down --remove-orphans
           docker-compose -f docker-compose.dev.yml up -d
