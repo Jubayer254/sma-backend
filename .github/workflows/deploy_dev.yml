@@ -75,13 +75,6 @@ jobs:
     needs: dev-pull-from-hub
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Copy docker-compose file to deployment directory
-        run: |
-          cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
-
       - name: Deploy the application
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
