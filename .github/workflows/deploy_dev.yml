@@ -29,12 +29,12 @@ jobs:
       - name: Build Docker images
         run: docker-compose -f docker-compose.dev.yml build
       - name: Push Docker images
-        run: docker-compose -f docker-compose.dev.yml push  
+        run: docker-compose -f docker-compose.dev.yml push
 
   dev-pull-from-hub:
     runs-on: bitnova-runner
     environment: master
-    needs: dev-push-to-hub
+    needs: build-and-push-dev-image
 
     steps:
       - name: Install Docker Compose (if not available)
@@ -59,10 +59,13 @@ jobs:
     needs: dev-pull-from-hub
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Prepare Environment Variables
         run: |
-          chmod +x ./setup-cicd-env/setup.sh
-          ./setup-cicd-env/setup.sh
+          chmod +x ./setup-cicd-env/script.sh
+          ./setup-cicd-env/script.sh
 
       - name: Deploy the application
         run: |
