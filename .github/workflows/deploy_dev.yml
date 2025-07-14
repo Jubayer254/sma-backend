@@ -1,12 +1,12 @@
+# .github/workflows/ci-cd.yml
 name: SMA Backend Development Environment
 
 on:
   pull_request:
     branches: [master]
-  workflow_dispatch:  # Enables manual trigger
 
 jobs:
-  dev-build:
+  build-and-push-dev-image:
     runs-on: ubuntu-latest
     environment: master
 
@@ -28,18 +28,8 @@ jobs:
 
       - name: Build Docker images
         run: docker-compose -f docker-compose.dev.yml build
-
-  dev-push-to-hub:
-    runs-on: ubuntu-latest
-    environment: master
-    needs: dev-build
-
-    steps:
-      - name: Docker Login
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
-
       - name: Push Docker images
-        run: docker-compose -f docker-compose.dev.yml push
+        run: docker-compose -f docker-compose.dev.yml push  
 
   dev-pull-from-hub:
     runs-on: bitnova-runner
@@ -47,6 +37,14 @@ jobs:
     needs: dev-push-to-hub
 
     steps:
+      - name: Install Docker Compose (if not available)
+        run: |
+          docker-compose --version || {
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+          }
+
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
 
@@ -70,27 +68,3 @@ jobs:
         run: |
           cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml up -d --build
-
-  dev-down:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    runs-on: bitnova-runner
-    environment: master
-    needs: dev-pull-from-hub
-
-    steps:
-      - name: Take down the dev environment
-        run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
-          docker-compose -f docker-compose.dev.yml down
-
-  dev-up:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    runs-on: bitnova-runner
-    environment: master
-    needs: dev-down  # or dev-pull-from-hub if you don't want strict sequencing
-
-    steps:
-      - name: Bring up the dev environment
-        run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
-          docker-compose -f docker-compose.dev.yml up -d
