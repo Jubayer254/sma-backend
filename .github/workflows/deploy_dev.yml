@@ -6,7 +6,7 @@ on:
     branches: [master]
 
 jobs:
-  dev-build:
+  build-and-push-dev-image:
     runs-on: ubuntu-latest
     environment: master
 
@@ -28,27 +28,8 @@ jobs:
 
       - name: Build Docker images
         run: docker-compose -f docker-compose.dev.yml build
-
-  dev-push-to-hub:
-    runs-on: ubuntu-latest
-    environment: master
-    needs: dev-build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-
-      - name: Docker Login
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
-
       - name: Push Docker images
-        run: docker-compose -f docker-compose.dev.yml push
+        run: docker-compose -f docker-compose.dev.yml push  
 
   dev-pull-from-hub:
     runs-on: bitnova-runner
