@@ -64,8 +64,8 @@ jobs:
 
       - name: Prepare Environment Variables
         run: |
-          chmod +x ./setup-cicd-env/script.sh
-          ./setup-cicd-env/script.sh
+          chmod +x /app/setup-cicd-env/script.sh
+          /app/setup-cicd-env/script.sh
 
       - name: Deploy the application
         run: |
