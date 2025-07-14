@@ -20,21 +20,21 @@ jobs:
 
       - name: Prepare .env File
         env:
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
-          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
-          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DEBUG: ${{ secrets.DEBUG }}
-          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
-          TEST: ${{ secrets.TEST }}
+          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ vars.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ vars.EMAIL_HOST_PASSWORD }}
+          SECRET_KEY: ${{ vars.SECRET_KEY }}
+          DEBUG: ${{ vars.DEBUG }}
+          ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+          TEST: ${{ vars.TEST }}
         run: |
           chmod +x ./setup-cicd-env/script.sh
           ./setup-cicd-env/script.sh
 
       - name: Docker Login
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ vars.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build & Push Docker Image
         run: |
