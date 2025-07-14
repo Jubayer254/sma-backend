@@ -60,7 +60,6 @@ jobs:
 
       - name: Pull the latest images
         run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml pull
 
   deploy-to-dev:
@@ -70,6 +69,5 @@ jobs:
     steps:        
       - name: Deploy the application
         run: |
-          cd /home/ubuntu/deploy/sma-backend-docker/
           docker-compose -f docker-compose.dev.yml down --remove-orphans
           docker-compose -f docker-compose.dev.yml up -d
