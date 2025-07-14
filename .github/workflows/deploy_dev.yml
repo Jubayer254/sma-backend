@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-push-dev-image:
     runs-on: ubuntu-latest
-    environment: master
+    environment: dev
 
     steps:
       - name: Checkout code
@@ -23,6 +23,16 @@ jobs:
           docker-compose --version
 
       - name: Prepare Environment Variables
+        env:
+          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
+          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ vars.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ vars.EMAIL_HOST_PASSWORD }}
+          SECRET_KEY: ${{ vars.SECRET_KEY }}
+          DEBUG: ${{ vars.DEBUG }}
+          ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+          TEST: ${{ vars.TEST }}
         run: |
           chmod +x ./setup-cicd-env/script.sh
           ./setup-cicd-env/script.sh
@@ -39,7 +49,7 @@ jobs:
 
   dev-pull-from-hub:
     runs-on: bitnova-runner
-    environment: master
+    environment: dev
     needs: build-and-push-dev-image
 
     steps:
@@ -61,7 +71,7 @@ jobs:
 
   deploy-to-dev:
     runs-on: bitnova-runner
-    environment: master
+    environment: dev
     needs: dev-pull-from-hub
 
     steps:
