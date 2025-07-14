@@ -10,7 +10,7 @@ jobs:
     environment: dev
 
     steps:
-      - name: Checkout code
+      - name: bitnova-runner
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -36,7 +36,6 @@ jobs:
         run: |
           chmod +x ./setup-cicd-env/script.sh
           ./setup-cicd-env/script.sh
-          cat ./sma_backend/conf/.env
 
       - name: Docker Login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ vars.DOCKER_USERNAME }}" --password-stdin
@@ -81,22 +80,6 @@ jobs:
       - name: Copy docker-compose file to deployment directory
         run: |
           cp docker-compose.dev.yml /home/ubuntu/deploy/sma-backend-docker/
-
-      - name: Prepare Environment Variables
-        env:
-          EMAIL_HOST: ${{ vars.EMAIL_HOST }}
-          EMAIL_PORT: ${{ vars.EMAIL_PORT }}
-          EMAIL_USE_TLS: ${{ vars.EMAIL_USE_TLS }}
-          EMAIL_HOST_USER: ${{ vars.EMAIL_HOST_USER }}
-          EMAIL_HOST_PASSWORD: ${{ vars.EMAIL_HOST_PASSWORD }}
-          SECRET_KEY: ${{ vars.SECRET_KEY }}
-          DEBUG: ${{ vars.DEBUG }}
-          ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
-          TEST: ${{ vars.TEST }}
-        run: |
-          chmod +x ./setup-cicd-env/script.sh
-          ./setup-cicd-env/script.sh
-          cat ./sma_backend/conf/.env    
 
       - name: Deploy the application
         run: |
