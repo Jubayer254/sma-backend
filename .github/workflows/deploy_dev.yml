@@ -34,7 +34,7 @@ jobs:
   dev-pull-from-hub:
     runs-on: bitnova-runner
     environment: master
-    needs: dev-push-to-hub
+    needs: build-and-push-dev-image
 
     steps:
       - name: Install Docker Compose (if not available)
