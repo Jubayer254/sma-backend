@@ -62,9 +62,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify checkout and setup script
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+          echo "Setup directory contents:"
+          ls -la setup-cicd-env/
+          echo "Setup script details:"
+          ls -la setup-cicd-env/setup.sh
+
       - name: Prepare Environment Variables
         run: |
-          chmod +x ./setup-cicd-env/setup.sh
+          echo "Making setup script executable..."
+          chmod +x setup-cicd-env/setup.sh
+          echo "Executing setup script..."
           ./setup-cicd-env/setup.sh
 
       - name: Deploy the application
