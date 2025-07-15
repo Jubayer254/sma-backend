@@ -20,8 +20,6 @@ COPY apps/ /app/
 # Copy the env script into the container
 COPY setup-cicd-env/ /app/setup-cicd-env/
 
-RUN bash setup-cicd-env/script.sh
-
 RUN adduser -D app
 RUN chown -R app:app /app
 RUN chmod -R 755 /app
