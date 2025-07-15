@@ -8,7 +8,7 @@ environ.Env.read_env()
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = int(env('DEBUG'))
 
 ALLOWED_HOSTS = [origin.split("//")[-1].split(":")[0] for origin in str(env('ALLOWED_HOSTS')).split(',')]
 
