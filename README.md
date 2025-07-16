@@ -1,1 +1,1 @@
-### This is the backend for (SMA).
+### This is the backend for SMA.
