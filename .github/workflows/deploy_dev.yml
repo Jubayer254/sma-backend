@@ -2,7 +2,7 @@ name: SMA Backend Development Environment
 
 on:
   push:
-    branches: [master]
+    branches: [dev]
 
 jobs:
   build-and-push-dev-image:
