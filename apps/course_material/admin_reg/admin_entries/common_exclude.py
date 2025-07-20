@@ -1,0 +1,1 @@
+COMMON_EXCLUDE = ('created_by', 'updated_by')
