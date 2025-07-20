@@ -3,12 +3,18 @@ from course_material.models.base_model import BaseModel
 from course_material.models.course import Batch
 from course_material.minio_backend import MinioStorage
 from django.core.validators import FileExtensionValidator
+import os
+from datetime import datetime
 
 # 👇 Define the upload path function
 def upload_to_recording_path(instance, filename):
+    name, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    safe_filename = f"{name}_{timestamp}{ext}"
+
     if instance.batch_id:
-        return f'recordings/Batch {instance.batch_id}/{filename}'
-    return f'recordings/unknown/{filename}'
+        return f'recordings/Batch {instance.batch_id}/{safe_filename}'
+    return f'recordings/unknown/{safe_filename}'
 
 class Recording(BaseModel):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='recordings')
