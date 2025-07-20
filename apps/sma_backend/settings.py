@@ -29,7 +29,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 from sma_backend.conf.authorization import AUTH_USER_MODEL
-from sma_backend.conf.databases import DATABASES
+from sma_backend.conf.databases import *
 from sma_backend.conf.djoser import DJOSER
 from sma_backend.conf.email_conf import *
 from sma_backend.conf.installed_apps import INSTALLED_APPS

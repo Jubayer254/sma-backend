@@ -17,9 +17,22 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('', lambda request: redirect('admin/', permanent=False)),
     path('auth/', include('djoser.urls')),  # User routes
     path('auth/', include('djoser.urls.jwt')),  # JWT endpoints
+    path('api/', include('course_material.urls')),  # Course material API
 ]
+
+urlpatterns += [
+    path('i18n/', include('django.conf.urls.i18n')),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

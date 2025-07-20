@@ -2,7 +2,7 @@ name: SMA Backend Development Environment
 
 on:
   push:
-    branches: [master]
+    branches: [dev]
 
 jobs:
   build-and-push-dev-image:
@@ -63,11 +63,20 @@ jobs:
           EMAIL_PORT="${{ vars.EMAIL_PORT }}"
           EMAIL_USE_TLS="${{ vars.EMAIL_USE_TLS }}"
           EMAIL_HOST_USER="${{ vars.EMAIL_HOST_USER }}"
-          EMAIL_HOST_PASSWORD="${{ vars.EMAIL_HOST_PASSWORD }}"
-          SECRET_KEY="${{ vars.SECRET_KEY }}"
+          EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}"
+          SECRET_KEY="${{ secrets.SECRET_KEY }}"
           DEBUG="${{ vars.DEBUG }}"
           ALLOWED_HOSTS="${{ vars.ALLOWED_HOSTS }}"
           TEST="${{ vars.TEST }}"
+
+          MINIO_ENDPOINT="${{ vars.MINIO_ENDPOINT }}"
+          MINIO_ACCESS_KEY="${{ secrets.MINIO_ACCESS_KEY }}"
+          MINIO_SECRET_KEY="${{ secrets.MINIO_SECRET_KEY }}"
+          MINIO_BUCKET_NAME="${{ vars.MINIO_BUCKET_NAME }}"
+          USE_HTTPS="${{ vars.USE_HTTPS }}"
+          AWS_S3_FILE_OVERWRITE="${{ vars.AWS_S3_FILE_OVERWRITE }}"
+          AWS_DEFAULT_ACL="${{ vars.AWS_DEFAULT_ACL }}"
+
           EOF
         
       - name: Deploy the application
