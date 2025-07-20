@@ -4,10 +4,16 @@ from course_material.models.instructor import Instructor
 from datetime import datetime, timedelta, date
 from django.core.validators import FileExtensionValidator
 from course_material.minio_backend import MinioStorage
+import os
+from datetime import datetime
 
 def upload_to_demo_video(instance, filename):
+    name, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    safe_filename = f"{name}_{timestamp}{ext}"
+
     course_id = instance.id or 'unknown'
-    return f'courses/demos/Course_{course_id}/{filename}'
+    return f'courses/demos/Course_{course_id}/{safe_filename}'
 
 class Course(BaseModel):
     title = models.CharField(max_length=200)

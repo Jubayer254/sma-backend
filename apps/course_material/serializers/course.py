@@ -9,7 +9,6 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'order', 'content', 'created_at', 'updated_at']
         
 class CourseSerializer(serializers.ModelSerializer):
-    instructors = InstructorSerializer(many=True)
     course_details = CourseDetailSerializer(source='details', many=True)  # ✅ use related_name
     demo_video_url = serializers.SerializerMethodField()
 
