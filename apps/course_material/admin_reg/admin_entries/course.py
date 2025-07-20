@@ -22,3 +22,6 @@ class BatchAdmin(AuditFieldsAdminMixin, admin.ModelAdmin):
     search_fields = ('name', 'course__title', 'course__description')
     autocomplete_fields = ('course',)
     exclude = COMMON_EXCLUDE
+
+    # ✅ This improves the instructor field UI
+    filter_horizontal = ('instructors',)

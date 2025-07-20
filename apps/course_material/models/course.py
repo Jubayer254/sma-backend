@@ -12,7 +12,6 @@ def upload_to_demo_video(instance, filename):
 class Course(BaseModel):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    instructors = models.ManyToManyField(Instructor, related_name='courses')
     thumbnail = models.ImageField(upload_to='courses/thumbnails/', blank=True, null=True)
     demo_video = models.FileField(
         storage=MinioStorage(),
@@ -53,6 +52,7 @@ class Batch(BaseModel):
     name = models.CharField(max_length=100)
     start_date = models.DateField()
     end_date = models.DateField()
+    instructors = models.ManyToManyField(Instructor, related_name='courses')
     monday = models.BooleanField(default=False)
     tuesday = models.BooleanField(default=False)
     wednesday = models.Boolean = models.BooleanField(default=False)
