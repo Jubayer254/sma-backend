@@ -8,8 +8,9 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': True,
     'SEND_ACTIVATION_EMAIL': True,
     'EMAIL': {
-        'activation': 'sma_auth.email.ActivationEmail',
-        'password_reset': 'sma_auth.email.PasswordResetEmail',
+        'activation': 'sma_auth.custom_email.ActivationEmail',
+        'confirmation': 'sma_auth.custom_email.CustomConfirmationEmail',
+        'password_reset': 'sma_auth.custom_email.PasswordResetEmail',
+        'password_changed_confirmation': 'sma_auth.custom_email.CustomPasswordChangedConfirmationEmail',
     },
-
 }
