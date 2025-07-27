@@ -6,78 +6,140 @@ Welcome to Spark Medical Academy
 
 {% block html_body %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Account Activated</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f7;
-      color: #333;
-      padding: 20px;
-    }
-    .email-container {
-      max-width: 600px;
-      background: #fff;
-      padding: 40px;
-      margin: auto;
-      border-radius: 8px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-      text-align: center;  /* <-- Added this */
-    }
-    .logo {
-      margin-bottom: 30px;
-    }
-    .logo img {
-      max-width: 140px;
-    }
-    .button {
-      background-color: #45B78B;
-      color: #ffffff !important;
-      padding: 14px 28px;
-      text-decoration: none !important;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 16px;
-      display: inline-block;
-      margin-top: 20px;
-    }
-    .footer {
-      font-size: 12px;
-      color: #999;
-      margin-top: 40px;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% trans "Account Activated" %}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f7;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #333333;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            padding: 20px;
+            background-color: #f4f4f7;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            max-width: 140px;
+            height: auto;
+        }
+
+        h2 {
+            color: #45B78B;
+            margin-bottom: 24px;
+            font-size: 24px;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+
+        .button-wrapper {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .button {
+            background-color: #45B78B;
+            color: #ffffff;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background-color: #3ca87c;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #999999;
+            margin-top: 40px;
+        }
+
+        .developer-logo {
+            margin-top: 12px;
+        }
+
+        .developer-logo img {
+            max-width: 100px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                padding: 20px;
+            }
+
+            .button {
+                background-color: #45B78B;
+                color: #ffffff !important;
+                padding: 14px 28px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 16px;
+                display: inline-block;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="email-container">
-    <div class="logo">
-      <img src="https://sma-fawn.vercel.app/assets/images/logo/SMA%20Logo-01.png" alt="Spark Medical Academy" style="max-width: 100px; height: auto;" />
+    <div class="email-wrapper">
+        <div class="email-container">
+            <div class="logo">
+                <img src="https://sma-fawn.vercel.app/assets/images/logo/SMA%20Logo-01.png" alt="Spark Medical Academy Logo" style="max-width: 100px; height: auto;" />
+            </div>
+
+            <h2>{% trans "Your account has been successfully activated!" %}</h2>
+            
+            <p>{% trans "You can now log in and start learning with us." %}</p>
+
+            <div class="button-wrapper">
+                <a href="{{ protocol }}://{{ domain }}" class="button" style="background-color: #45B78B; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;">{% trans "Login to your account" %}</a>
+            </div>
+
+            <p>{% trans "Thanks for using our site!" %}</p>
+
+            <div class="footer">
+                <p>{% blocktrans %}The Spark Medical Academy Team{% endblocktrans %}</p>
+                <p>{% trans "Developed by" %}</p>
+                <div class="developer-logo">
+                    <img src="https://sma-fawn.vercel.app/assets/images/logo/BitNova.png" alt="Developed by BitNova" />
+                </div>
+            </div>
+        </div>
     </div>
-
-    <h2>Your account has been successfully activated!</h2>
-    <p>You can now log in and start learning with us.</p>
-
-    <a href="{{ protocol }}://{{ domain }}" class="button">Login to your account</a>
-
-    <p>{% trans "Thanks for using our site!" %}</p>
-
-    <div class="footer">
-      <p>{% blocktrans %}The {{ site_name }} team{% endblocktrans %}</p>
-      <div class="developer-logo">
-        <img src="https://sma-fawn.vercel.app/assets/images/logo/BitNova.png" alt="Developed by BitNova" style="max-width: 100px; height: auto;" />
-      </div>
-    </div>
-  </div>
 </body>
 </html>
-{% endblock %}
-
-{% block body %}
-Your account has been successfully activated!
-
-You can now log in and start exploring.
-
-Thanks for joining Spark Medical Academy.
-{% endblock %}
+{% endblock html_body %}

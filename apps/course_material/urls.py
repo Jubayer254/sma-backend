@@ -1,7 +1,6 @@
 # course_material/api/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from course_material.storages_backend import SecureRecordingDownloadView, SecureResourceDownloadView, PublicDemoVideoView
 from course_material.views.class_resources import ResourceListView
 from course_material.views.exam import ExamListView, QuestionListView, AnswerListView
 from course_material.views.recording import RecordingListView
@@ -20,8 +19,4 @@ urlpatterns = [
     path("exams/", ExamListView.as_view(), name="exams"),
     path("exams/<int:exam_id>/questions/", QuestionListView.as_view(), name="exam-questions"),
     path("questions/<int:question_id>/answers/", AnswerListView.as_view(), name="question-answers"),
-
-    path("recordings/<int:pk>/download/", SecureRecordingDownloadView.as_view(), name="recording-download"),
-    path("resources/<int:pk>/download/", SecureResourceDownloadView.as_view(), name="resource-download"),
-    path('courses/<int:pk>/demo-video/', PublicDemoVideoView.as_view(), name='demo-video'),
 ]

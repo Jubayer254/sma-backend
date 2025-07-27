@@ -10,3 +10,5 @@ class ClassResourceAdmin(AuditFieldsAdminMixin, admin.ModelAdmin):
     search_fields = ('title', 'batch__name', 'batch__course__title')
     autocomplete_fields = ('batch',)
     exclude = COMMON_EXCLUDE
+
+    readonly_fields = ('object_key',)

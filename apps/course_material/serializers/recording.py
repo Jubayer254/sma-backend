@@ -6,8 +6,7 @@ class RecordingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recording
-        exclude = ['recording_file']
+        fields = ['id', 'title', 'description', 'class_date', 'download_url']
 
     def get_download_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(f"/api/recordings/{obj.id}/download/")
+        return obj.get_presigned_url()

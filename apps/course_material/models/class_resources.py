@@ -1,47 +1,50 @@
 from django.db import models
 from course_material.models.base_model import BaseModel
-from course_material.minio_backend import MinioStorage
 from course_material.models.course import Batch
-from django.core.validators import FileExtensionValidator
-import os
-from datetime import datetime
-
-# ✅ Helper to use batch ID in file path
-def upload_to_batch_path(instance, filename):
-    name, ext = os.path.splitext(filename)
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    safe_filename = f"{name}_{timestamp}{ext}"
-    
-    if instance.batch_id:
-        return f'resources/Batch {instance.batch_id}/{safe_filename}'
-    return f'resources/unknown/{safe_filename}'
+from urllib.parse import urlparse, unquote
+from django.conf import settings
+import boto3
+from botocore.config import Config
 
 class ClassResource(BaseModel):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    class_date = models.DateField(blank=True, null=True, help_text="Leave blank for general batch resources")
+    class_date = models.DateField(blank=True, null=True)
 
-    file = models.FileField(
-        storage=MinioStorage(),
-        upload_to=upload_to_batch_path,  # ✅ This is the fix
-        blank=True,
-        null=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=[
-                'pdf', 'docx', 'pptx', 'txt', 'csv', 'xlsx', 'jpg', 'jpeg', 'png'
-            ])
-        ]
-    )
-    external_link = models.URLField(max_length=500, blank=True)
+    minio_browser_url = models.URLField(blank=True)
+    object_key = models.CharField(max_length=500, blank=True)
+    external_link = models.URLField(blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.minio_browser_url:
+            parsed = urlparse(self.minio_browser_url)
+            key_part = parsed.path.split('/browser/spark/')[-1]
+            self.object_key = unquote(key_part)
+        super().save(*args, **kwargs)
+
+    def get_presigned_url(self, expires=3600):
+        if not self.object_key:
+            return None
+        s3 = boto3.client(
+            's3',
+            endpoint_url=settings.MINIO_ENDPOINT,
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
+        )
+        try:
+            return s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.MINIO_BUCKET_NAME, 'Key': self.object_key},
+                ExpiresIn=expires,
+                config=Config(signature_version='s3v4')
+            )
+        except Exception:
+            return None
 
     def __str__(self):
-        if self.class_date:
-            return f"{self.batch} - {self.title} ({self.class_date})"
-        return f"{self.batch} - {self.title} (General)"
+        return f"{self.batch} - {self.title}"
 
     class Meta:
-        db_table = 'class_resources'
-        ordering = ['class_date', 'created_at']
-        verbose_name = "5. Class Resource"
-        verbose_name_plural = "5. Class Resources"
+        verbose_name = '5. Class Resource'
+        verbose_name_plural = '5. Class Resources'

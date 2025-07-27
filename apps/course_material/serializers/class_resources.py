@@ -6,10 +6,7 @@ class ClassResourceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassResource
-        exclude = ['file']
+        fields = ['id', 'title', 'description', 'class_date', 'external_link', 'download_url']
 
     def get_download_url(self, obj):
-        if not obj.file:
-            return None
-        request = self.context.get('request')
-        return request.build_absolute_uri(f"/api/resources/{obj.id}/download/")
+        return obj.get_presigned_url()

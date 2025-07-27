@@ -4,14 +4,18 @@ from course_material.admin_reg.user_action_log_mixin import AuditFieldsAdminMixi
 from course_material.admin_reg.admin_entries.common_exclude import COMMON_EXCLUDE
 from course_material.admin_reg.custom_form import BatchAdminForm
 from course_material.admin_reg.admin_entries.inlines import CourseDetailInline
+from course_material.admin_reg.forms.course_form import CourseAdminForm
 
 @admin.register(Course)
 class CourseAdmin(AuditFieldsAdminMixin, admin.ModelAdmin):
+    form = CourseAdminForm  # ✅ Use custom form here
     inlines = [CourseDetailInline]
-    list_display = ('title', 'price', 'demo_video', 'is_active')
+    list_display = ('title', 'price', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('title', 'description')
+    readonly_fields = ('demo_video_object_key',)
     exclude = COMMON_EXCLUDE
+
 
 
 @admin.register(Batch)

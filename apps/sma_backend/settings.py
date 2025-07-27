@@ -33,6 +33,7 @@ from sma_backend.conf.databases import *
 from sma_backend.conf.djoser import DJOSER
 from sma_backend.conf.email_conf import *
 from sma_backend.conf.installed_apps import INSTALLED_APPS
+# from sma_backend.conf.logging import LOGGING
 from sma_backend.conf.middleware import MIDDLEWARE
 from sma_backend.conf.rest_confs import REST_FRAMEWORK, SIMPLE_JWT
 from sma_backend.conf.security import *

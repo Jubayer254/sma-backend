@@ -11,7 +11,3 @@ class CustomConfirmationEmail(email.ConfirmationEmail):
 
 class CustomPasswordChangedConfirmationEmail(email.PasswordChangedConfirmationEmail):
     template_name = "email/password_change_success.html"
-
-    def get_context_data(self):
-        print("🎯 CustomPasswordChangedConfirmationEmail triggered")
-        return super().get_context_data()

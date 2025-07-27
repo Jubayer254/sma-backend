@@ -1,33 +1,56 @@
 from django.db import models
 from course_material.models.base_model import BaseModel
 from course_material.models.instructor import Instructor
-from datetime import datetime, timedelta, date
-from django.core.validators import FileExtensionValidator
-from course_material.minio_backend import MinioStorage
-import os
-from datetime import datetime
-
-def upload_to_demo_video(instance, filename):
-    name, ext = os.path.splitext(filename)
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    safe_filename = f"{name}_{timestamp}{ext}"
-
-    course_id = instance.id or 'unknown'
-    return f'courses/demos/Course_{course_id}/{safe_filename}'
+from datetime import timedelta, date
+from urllib.parse import urlparse, unquote
+from django.conf import settings
+import boto3
+from botocore.config import Config
 
 class Course(BaseModel):
     title = models.CharField(max_length=200)
     description = models.TextField()
     thumbnail = models.ImageField(upload_to='courses/thumbnails/', blank=True, null=True)
-    demo_video = models.FileField(
-        storage=MinioStorage(),
-        upload_to=upload_to_demo_video,
+
+    demo_video_url = models.URLField(
+        help_text="Paste the MinIO browser link (e.g., http://localhost:9001/browser/spark/...)",
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'wmv'])]
     )
+    demo_video_object_key = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Auto-filled from demo_video_url"
+    )
+
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if self.demo_video_url:
+            parsed = urlparse(self.demo_video_url)
+            key_part = parsed.path.split('/browser/spark/')[-1]
+            self.demo_video_object_key = unquote(key_part)
+        super().save(*args, **kwargs)
+
+    def get_presigned_demo_video_url(self, expires=3600):
+        if not self.demo_video_object_key:
+            return None
+        s3 = boto3.client(
+            's3',
+            endpoint_url=settings.MINIO_ENDPOINT,
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
+            config=Config(signature_version='s3v4')
+        )
+        try:
+            return s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.MINIO_BUCKET_NAME, 'Key': self.demo_video_object_key},
+                ExpiresIn=expires
+            )
+        except Exception:
+            return None
 
     def __str__(self):
         return self.title
@@ -37,6 +60,7 @@ class Course(BaseModel):
         ordering = ['-created_at']
         verbose_name = "2. Course"
         verbose_name_plural = "2. Courses"
+
 
 class CourseDetail(BaseModel):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='details')

@@ -15,6 +15,6 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework.authtoken',
     'nested_admin',
-
     'storages',
+    'corsheaders',
 ]

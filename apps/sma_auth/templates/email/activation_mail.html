@@ -7,6 +7,7 @@
 {% block html_body %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,7 +33,7 @@
       background-color: #ffffff;
       border-radius: 12px;
       padding: 40px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
     }
 
     .logo {
@@ -121,16 +122,19 @@
     }
   </style>
 </head>
+
 <body>
   <div class="email-wrapper">
     <div class="email-content">
       <div class="logo">
-        <img src="https://sma-fawn.vercel.app/assets/images/logo/SMA%20Logo-01.png" alt="Spark Medical Academy Logo" style="max-width: 100px; height: auto;"/>
+        <img src="https://sma-fawn.vercel.app/assets/images/logo/SMA%20Logo-01.png" alt="Spark Medical Academy Logo"
+          style="max-width: 100px; height: auto;" />
       </div>
 
       <h2>{% trans "Activate Your Account" %}</h2>
 
-      <p>{% blocktrans %}You're receiving this email because you recently registered an account at Spark Medical Academy.{% endblocktrans %}</p>
+      <p>{% blocktrans %}You're receiving this email because you recently registered an account at Spark Medical
+        Academy.{% endblocktrans %}</p>
 
       <p>{% trans "Please click the button below to activate your account:" %}</p>
 
@@ -144,7 +148,8 @@
         <a href="{{ protocol }}://{{ domain }}/{{ url|safe }}">{{ protocol }}://{{ domain }}/{{ url|safe }}</a>
       </p>
 
-      <p>{% trans "Your username, in case you’ve forgotten:" %} <span class="username">{{ user.get_username }}</span></p>
+      <p>{% trans "Your username, in case you’ve forgotten:" %} <span class="username">{{ user.get_username }}</span>
+      </p>
 
       <p>{% trans "Thanks for joining us!" %}</p>
 
@@ -152,11 +157,13 @@
         <p>{% blocktrans %}The Spark Medical Academy Team{% endblocktrans %}</p>
         <p>{% trans "Developed by" %}</p>
         <div class="developer-logo">
-          <img src="https://sma-fawn.vercel.app/assets/images/logo/BitNova.png" alt="Developed by BitNova" style="max-width: 100px; height: auto;"/>
+          <img src="https://sma-fawn.vercel.app/assets/images/logo/BitNova.png" alt="Developed by BitNova"
+            style="max-width: 100px; height: auto;" />
         </div>
       </div>
     </div>
   </div>
 </body>
+
 </html>
 {% endblock html_body %}

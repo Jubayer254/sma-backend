@@ -21,6 +21,7 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
+from sma_auth import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),  # User routes
     path('auth/', include('djoser.urls.jwt')),  # JWT endpoints
     path('api/', include('course_material.urls')),  # Course material API
+    path('test/', views.index, name='test'),
 ]
 
 urlpatterns += [

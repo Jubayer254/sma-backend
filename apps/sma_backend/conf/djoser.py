@@ -7,6 +7,7 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/?uid={uid}&token={token}',
     'SEND_CONFIRMATION_EMAIL': True,
     'SEND_ACTIVATION_EMAIL': True,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
     'EMAIL': {
         'activation': 'sma_auth.custom_email.ActivationEmail',
         'confirmation': 'sma_auth.custom_email.CustomConfirmationEmail',

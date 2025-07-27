@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authenticated Video Streaming - Enhanced Debug Mode</title>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .video-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    #player {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      display: block;
+    }
+    .debug-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .debug-section {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .debug-section h3 {
+      margin: 0 0 10px 0;
+      color: #495057;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .debug-content {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat-item {
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      border: 1px solid #e9ecef;
+    }
+    .stat-value {
+      font-weight: bold;
+      color: #007bff;
+      display: block;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #6c757d;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .status-good { background: #28a745; }
+    .status-warning { background: #ffc107; }
+    .status-error { background: #dc3545; }
+    .error {
+      color: #dc3545;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .loading {
+      color: #007bff;
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .success {
+      color: #155724;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .network-info {
+      background: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .network-info h3 {
+      margin-top: 0;
+      color: #0066cc;
+    }
+    .test-controls {
+      margin: 15px 0;
+      padding: 15px;
+      background: #e3f2fd;
+      border-radius: 4px;
+      border-left: 4px solid #2196f3;
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 10px;
+      margin-bottom: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎬 Authenticated Video Streaming - Enhanced Debug Mode</h1>
+  
+  <div class="network-info">
+    <h3>📡 Expected Authentication Flow:</h3>
+    <p>1. First request: GET to <code>/stream-token/</code> with Authorization header (gets streaming token)</p>
+    <p>2. Video requests: Multiple GET requests to <code>/stream/video/{token}/</code> with <strong>Range headers</strong></p>
+    <p>3. You should see <strong>206 Partial Content</strong> responses in Network tab</p>
+    <p>4. No Authorization headers needed for video requests (token-based security)</p>
+  </div>
+
+  <div class="test-controls">
+    <strong>🔧 Debug Controls:</strong>
+    <button class="test-button" onclick="testTokenEndpoint()" id="test-token-btn">Test Token Endpoint</button>
+    <button class="test-button" onclick="testStreamUrl()" id="test-stream-btn" disabled>Test Stream URL</button>
+    <button class="test-button" onclick="testRangeSupport()" id="test-range-btn" disabled>Test Range Support</button>
+    <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+    <span id="test-status"></span>
+  </div>
+  
+  <div class="video-container">
+    <video id="player" controls playsinline preload="metadata" style="display: none;"></video>
+    <div class="loading" id="loading">Getting streaming token...</div>
+    <div class="error" id="error" style="display: none;"></div>
+    <div class="success" id="success" style="display: none;"></div>
+  </div>
+  
+  <div class="debug-panel">
+    <div class="debug-section">
+      <h3><span class="status-indicator" id="auth-status"></span>Authentication Flow</h3>
+      <div class="debug-content" id="auth-debug"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3><span class="status-indicator" id="network-status"></span>Network Requests</h3>
+      <div class="debug-content" id="network-debug"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3><span class="status-indicator" id="video-status"></span>Video Events</h3>
+      <div class="debug-content" id="video-debug"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>📊 Streaming Stats</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value" id="buffered-time">-</span>
+          <div class="stat-label">Buffered (s)</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="download-speed">-</span>
+          <div class="stat-label">Speed (Mbps)</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="buffer-health">-</span>
+          <div class="stat-label">Buffer Health</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="network-state">-</span>
+          <div class="stat-label">Network State</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="ready-state">-</span>
+          <div class="stat-label">Ready State</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="range-requests">0</span>
+          <div class="stat-label">Range Requests</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="debug-section">
+      <h3>🔐 Token Information</h3>
+      <div class="debug-content" id="token-info"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script>
+  // Configuration
+  const RECORDING_ID = 2;
+  const BASE_URL = 'http://localhost:8000';
+  const TOKEN_ENDPOINT = `${BASE_URL}/api/recordings/${RECORDING_ID}/stream-token/`;
+  const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTYxMzYwLCJpYXQiOjE3NTM1NTk1NjAsImp0aSI6ImI4ZmZjMWZmYTg3ODQxNzRiM2YxNzk1YTYzOGJmZTk5IiwidXNlcl9pZCI6MX0.-L9iOSesljmA_1EITp5309ENojCGH_1ig_TZby1AI_Y';
+
+  // Global state
+  let player = null;
+  let streamUrl = null;
+  let tokenData = null;
+  let rangeRequestCount = 0;
+  let startTime = Date.now();
+  let monitoringInterval = null;
+
+  // DOM elements
+  const elements = {
+    loading: document.getElementById('loading'),
+    player: document.getElementById('player'),
+    error: document.getElementById('error'),
+    success: document.getElementById('success'),
+    authDebug: document.getElementById('auth-debug'),
+    networkDebug: document.getElementById('network-debug'),
+    videoDebug: document.getElementById('video-debug'),
+    tokenInfo: document.getElementById('token-info'),
+    authStatus: document.getElementById('auth-status'),
+    networkStatus: document.getElementById('network-status'),
+    videoStatus: document.getElementById('video-status'),
+    testStatus: document.getElementById('test-status'),
+    bufferedTime: document.getElementById('buffered-time'),
+    downloadSpeed: document.getElementById('download-speed'),
+    bufferHealth: document.getElementById('buffer-health'),
+    networkState: document.getElementById('network-state'),
+    readyState: document.getElementById('ready-state'),
+    rangeRequests: document.getElementById('range-requests')
+  };
+
+  function log(element, msg, isError = false) {
+    const time = new Date().toLocaleTimeString();
+    const prefix = isError ? '❌' : '📝';
+    element.textContent += `[${time}] ${prefix} ${msg}\n`;
+    element.scrollTop = element.scrollHeight;
+    console.log(msg);
+  }
+
+  function updateStatus(statusEl, className) {
+    statusEl.className = `status-indicator ${className}`;
+  }
+
+  function showError(message) {
+    elements.loading.style.display = 'none';
+    elements.player.style.display = 'none';
+    elements.error.style.display = 'block';
+    elements.error.textContent = message;
+    updateStatus(elements.authStatus, 'status-error');
+  }
+
+  function showSuccess(message) {
+    elements.success.style.display = 'block';
+    elements.success.textContent = message;
+  }
+
+  function showPlayer() {
+    elements.loading.style.display = 'none';
+    elements.player.style.display = 'block';
+    elements.error.style.display = 'none';
+  }
+
+  function clearLogs() {
+    Object.values(elements).forEach(el => {
+      if (el && el.classList && el.classList.contains('debug-content')) {
+        el.textContent = '';
+      }
+    });
+    rangeRequestCount = 0;
+    elements.rangeRequests.textContent = '0';
+  }
+
+  // Enhanced network monitoring
+  function monitorNetworkRequests() {
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      const url = args[0];
+      const options = args[1] || {};
+      
+      log(elements.networkDebug, `🌐 FETCH: ${url}`);
+      
+      if (options.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          if (key.toLowerCase() === 'range') {
+            rangeRequestCount++;
+            elements.rangeRequests.textContent = rangeRequestCount;
+            log(elements.networkDebug, `   📄 Range: ${value}`);
+          } else if (key.toLowerCase() === 'authorization') {
+            log(elements.networkDebug, `   🔐 Auth: Bearer ***`);
+          }
+        });
+      }
+      
+      return originalFetch.apply(this, args).then(response => {
+        const status = response.status;
+        const statusText = response.statusText;
+        
+        if (status === 206) {
+          log(elements.networkDebug, `   ✅ ${status} ${statusText} (Partial Content)`);
+          updateStatus(elements.networkStatus, 'status-good');
+        } else if (status >= 200 && status < 300) {
+          log(elements.networkDebug, `   ✅ ${status} ${statusText}`);
+          updateStatus(elements.networkStatus, 'status-good');
+        } else {
+          log(elements.networkDebug, `   ❌ ${status} ${statusText}`, true);
+          updateStatus(elements.networkStatus, 'status-error');
+        }
+        
+        const contentRange = response.headers.get('content-range');
+        const contentLength = response.headers.get('content-length');
+        const contentType = response.headers.get('content-type');
+        
+        if (contentRange) {
+          log(elements.networkDebug, `   📄 Content-Range: ${contentRange}`);
+        }
+        if (contentLength) {
+          log(elements.networkDebug, `   📦 Content-Length: ${contentLength}`);
+        }
+        if (contentType) {
+          log(elements.networkDebug, `   🎬 Content-Type: ${contentType}`);
+        }
+        
+        return response;
+      }).catch(error => {
+        log(elements.networkDebug, `   ❌ Error: ${error.message}`, true);
+        updateStatus(elements.networkStatus, 'status-error');
+        throw error;
+      });
+    };
+  }
+
+  async function getStreamingToken() {
+    try {
+      log(elements.authDebug, 'Requesting streaming token...');
+      updateStatus(elements.authStatus, 'status-warning');
+      
+      const response = await fetch(TOKEN_ENDPOINT, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${AUTH_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      log(elements.authDebug, `Token response: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Failed to get streaming token: ${response.status} - ${errorData.detail || response.statusText}`);
+      }
+
+      const data = await response.json();
+      tokenData = data;
+      
+      log(elements.authDebug, `✅ Got streaming token successfully`);
+      log(elements.authDebug, `Stream URL: ${data.stream_url}`);
+      log(elements.authDebug, `Filename: ${data.filename}`);
+      log(elements.authDebug, `Expires in: ${data.expires_in} seconds`);
+      
+      // Update token info panel
+      elements.tokenInfo.textContent = `
+Stream URL: ${data.stream_url}
+Filename: ${data.filename}
+Expires: ${data.expires_in}s
+Token Length: ${data.stream_url.split('/').pop().length} chars
+      `;
+      
+      updateStatus(elements.authStatus, 'status-good');
+      
+      // Enable test buttons
+      document.getElementById('test-stream-btn').disabled = false;
+      document.getElementById('test-range-btn').disabled = false;
+      
+      return data;
+
+    } catch (error) {
+      log(elements.authDebug, `❌ Token request failed: ${error.message}`, true);
+      updateStatus(elements.authStatus, 'status-error');
+      throw error;
+    }
+  }
+
+  function updateStreamingStats() {
+    if (!player || !player.media) return;
+
+    const video = player.media;
+    const buffered = video.buffered;
+    const currentTime = video.currentTime;
+
+    // Calculate buffered time ahead
+    let bufferedAhead = 0;
+    for (let i = 0; i < buffered.length; i++) {
+      if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
+        bufferedAhead = buffered.end(i) - currentTime;
+        break;
+      }
+    }
+
+    elements.bufferedTime.textContent = bufferedAhead.toFixed(1);
+
+    // Calculate download speed (rough estimate)
+    if (video.webkitVideoDecodedByteCount) {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const mbps = (video.webkitVideoDecodedByteCount * 8) / (elapsed * 1000000);
+      elements.downloadSpeed.textContent = mbps.toFixed(2);
+    }
+
+    // Buffer health indicator
+    const health = bufferedAhead > 10 ? 'Good' : bufferedAhead > 3 ? 'OK' : 'Low';
+    elements.bufferHealth.textContent = health;
+    elements.bufferHealth.style.color = 
+      health === 'Good' ? '#28a745' : 
+      health === 'OK' ? '#ffc107' : '#dc3545';
+
+    // Network and ready states
+    const networkStates = ['EMPTY', 'IDLE', 'LOADING', 'NO_SOURCE'];
+    const readyStates = ['HAVE_NOTHING', 'HAVE_METADATA', 'HAVE_CURRENT_DATA', 'HAVE_FUTURE_DATA', 'HAVE_ENOUGH_DATA'];
+    
+    elements.networkState.textContent = networkStates[video.networkState] || video.networkState;
+    elements.readyState.textContent = readyStates[video.readyState] || video.readyState;
+  }
+
+  function setupVideoPlayer(streamUrl, filename) {
+    const video = elements.player;
+    
+    // Video event listeners for comprehensive debugging
+    const events = [
+      'loadstart', 'durationchange', 'loadedmetadata', 'loadeddata', 
+      'progress', 'canplay', 'canplaythrough', 'play', 'pause', 
+      'seeking', 'seeked', 'waiting', 'playing', 'timeupdate',
+      'suspend', 'abort', 'error', 'emptied', 'stalled'
+    ];
+
+    events.forEach(event => {
+      video.addEventListener(event, (e) => {
+        let msg = `${event.toUpperCase()}`;
+        
+        // Add extra info for certain events
+        if (event === 'loadedmetadata') {
+          msg += ` - Duration: ${video.duration?.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}`;
+        } else if (event === 'progress' && video.buffered.length > 0) {
+          const buffered = video.buffered.end(0);
+          const percent = video.duration ? (buffered / video.duration * 100).toFixed(1) : 0;
+          msg += ` - Buffered: ${percent}%`;
+        } else if (event === 'timeupdate') {
+          // Limit timeupdate logs to avoid spam
+          if (Math.floor(video.currentTime) % 5 === 0 && video.currentTime > 0) {
+            msg += ` - Time: ${video.currentTime.toFixed(1)}s`;
+          } else {
+            return; // Skip most timeupdate events
+          }
+        }
+        
+        log(elements.videoDebug, msg);
+        
+        // Update status indicators
+        if (['error', 'abort', 'stalled'].includes(event)) {
+          updateStatus(elements.videoStatus, 'status-error');
+        } else if (['waiting', 'seeking'].includes(event)) {
+          updateStatus(elements.videoStatus, 'status-warning');
+        } else if (['playing', 'canplaythrough'].includes(event)) {
+          updateStatus(elements.videoStatus, 'status-good');
+        } else if (event === 'canplay') {
+          showPlayer();
+          showSuccess(`Video ready! Check Network tab for 206 responses. File: ${filename}`);
+        }
+      });
+    });
+    
+    video.addEventListener('error', (e) => {
+      const error = video.error;
+      let errorMessage = 'Unknown video error';
+      
+      if (error) {
+        switch(error.code) {
+          case error.MEDIA_ERR_ABORTED:
+            errorMessage = 'Video loading aborted by user';
+            break;
+          case error.MEDIA_ERR_NETWORK:
+            errorMessage = 'Network error while loading video';
+            break;
+          case error.MEDIA_ERR_DECODE:
+            errorMessage = 'Video decode error - format may be unsupported';
+            break;
+          case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'Video format not supported by browser';
+            break;
+        }
+      }
+      
+      log(elements.videoDebug, `❌ VIDEO ERROR: ${errorMessage} (Code: ${error?.code})`, true);
+      showError(errorMessage);
+    });
+
+    // Set video source
+    log(elements.videoDebug, `Setting video source: ${streamUrl}`);
+    video.src = streamUrl;
+    
+    // Initialize Plyr
+    player = new Plyr('#player', {
+      controls: [
+        'play-large', 'restart', 'rewind', 'play', 'fast-forward',
+        'progress', 'current-time', 'duration', 'mute', 'volume',
+        'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+      ],
+      settings: ['captions', 'quality', 'speed'],
+      speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
+      quality: { default: 720, options: [1080, 720, 480, 360] }
+    });
+
+    player.on('ready', () => {
+      log(elements.videoDebug, '🎬 Plyr player initialized');
+    });
+
+    // Start monitoring stats
+    if (monitoringInterval) clearInterval(monitoringInterval);
+    monitoringInterval = setInterval(updateStreamingStats, 2000);
+  }
+
+  // Test functions
+  async function testTokenEndpoint() {
+    const btn = document.getElementById('test-token-btn');
+    btn.disabled = true;
+    btn.textContent = 'Testing...';
+    
+    try {
+      elements.testStatus.textContent = 'Testing token endpoint...';
+      const response = await fetch(TOKEN_ENDPOINT, {
+        method: 'HEAD',
+        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+      });
+      
+      elements.testStatus.innerHTML = `✅ Token endpoint: ${response.status} ${response.statusText}`;
+      log(elements.authDebug, `Token endpoint test: ${response.status} ${response.statusText}`);
+    } catch (error) {
+      elements.testStatus.innerHTML = `❌ Token endpoint test failed: ${error.message}`;
+      log(elements.authDebug, `Token endpoint test failed: ${error.message}`, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Token Endpoint';
+    }
+  }
+
+  async function testStreamUrl() {
+    if (!streamUrl) return;
+    
+    const btn = document.getElementById('test-stream-btn');
+    btn.disabled = true;
+    btn.textContent = 'Testing...';
+    
+    try {
+      elements.testStatus.textContent = 'Testing stream URL...';
+      const response = await fetch(streamUrl, { method: 'HEAD' });
+      const size = response.headers.get('content-length');
+      const type = response.headers.get('content-type');
+      
+      elements.testStatus.innerHTML = `✅ Stream URL: ${response.status} | Size: ${size ? (parseInt(size) / 1024 / 1024).toFixed(1) + 'MB' : 'Unknown'} | Type: ${type || 'Unknown'}`;
+      log(elements.networkDebug, `Stream URL test: ${response.status} - Size: ${size}, Type: ${type}`);
+    } catch (error) {
+      elements.testStatus.innerHTML = `❌ Stream URL test failed: ${error.message}`;
+      log(elements.networkDebug, `Stream URL test failed: ${error.message}`, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Stream URL';
+    }
+  }
+
+  async function testRangeSupport() {
+    if (!streamUrl) return;
+    
+    const btn = document.getElementById('test-range-btn');
+    btn.disabled = true;
+    btn.textContent = 'Testing...';
+    
+    try {
+      elements.testStatus.textContent = 'Testing range support...';
+      const response = await fetch(streamUrl, {
+        headers: { 'Range': 'bytes=0-1023' }
+      });
+      
+      const contentRange = response.headers.get('content-range');
+      elements.testStatus.innerHTML = `✅ Range support: ${response.status} | ${contentRange || 'No range header'}`;
+      log(elements.networkDebug, `Range test: ${response.status} - ${contentRange}`);
+    } catch (error) {
+      elements.testStatus.innerHTML = `❌ Range test failed: ${error.message}`;
+      log(elements.networkDebug, `Range test failed: ${error.message}`, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Test Range Support';
+    }
+  }
+
+  async function initializeVideoStreaming() {
+    try {
+      log(elements.authDebug, '🚀 Starting authenticated video streaming...');
+      
+      // Enable network monitoring
+      monitorNetworkRequests();
+      
+      // Step 1: Get streaming token
+      elements.loading.textContent = 'Getting streaming token...';
+      const data = await getStreamingToken();
+      
+      // Step 2: Setup video player
+      elements.loading.textContent = 'Setting up video player...';
+      streamUrl = `${BASE_URL}${data.stream_url}`;
+      
+      log(elements.authDebug, `📺 Full streaming URL: ${streamUrl}`);
+      
+      setupVideoPlayer(streamUrl, data.filename);
+      
+      log(elements.authDebug, '✅ Initialization complete! Video should start loading...');
+      
+    } catch (error) {
+      console.error('Initialization failed:', error);
+      showError(`Failed to initialize video streaming: ${error.message}`);
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeVideoStreaming);
+  } else {
+    initializeVideoStreaming();
+  }
+
+  // Initial debug info
+  log(elements.authDebug, '🔧 Enhanced debug mode enabled');
+  log(elements.authDebug, `🎯 Recording ID: ${RECORDING_ID}`);
+  log(elements.authDebug, `🔗 Token endpoint: ${TOKEN_ENDPOINT}`);
+  log(elements.networkDebug, '📊 Monitoring all network requests...');
+  log(elements.videoDebug, '🎬 Video event monitoring started');
+</script>
+
+</body>
+</html>
