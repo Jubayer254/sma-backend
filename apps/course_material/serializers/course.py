@@ -9,14 +9,18 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     course_details = CourseDetailSerializer(source='details', many=True)
-    demo_video_url = serializers.SerializerMethodField()
+    demo_video_proxy_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        exclude = ['demo_video_object_key']
+        exclude = ['demo_video_object_key', 'demo_video_url']
 
-    def get_demo_video_url(self, obj):
-        return obj.get_presigned_demo_video_url()
+    def get_demo_video_proxy_url(self, obj):
+        request = self.context.get('request')
+        if not obj.demo_video_object_key:
+            return None
+        # Construct proxy URL for demo video streaming
+        return request.build_absolute_uri(f'/api/v1/proxy/demo-video/{obj.id}/')
 
 
 class BatchSerializer(serializers.ModelSerializer):

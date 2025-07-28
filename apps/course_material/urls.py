@@ -6,6 +6,7 @@ from course_material.views.exam import ExamListView, QuestionListView, AnswerLis
 from course_material.views.recording import RecordingListView
 from course_material.views.course import CourseViewSet, BatchViewSet
 from course_material.views.enrollment import MyEnrollmentViewSet
+from course_material.storage_backend import ProxyDemoVideoView, ProxyRecordingView, ProxyResourceView
 
 router = DefaultRouter()
 router.register("courses", CourseViewSet, basename="course")
@@ -19,4 +20,7 @@ urlpatterns = [
     path("exams/", ExamListView.as_view(), name="exams"),
     path("exams/<int:exam_id>/questions/", QuestionListView.as_view(), name="exam-questions"),
     path("questions/<int:question_id>/answers/", AnswerListView.as_view(), name="question-answers"),
+    path('v1/proxy/demo-video/<int:pk>/', ProxyDemoVideoView.as_view(), name='proxy-demo-video'),
+    path('v1/proxy/recording/<int:pk>/', ProxyRecordingView.as_view(), name='proxy-recording'),
+    path('v1/proxy/resource/<int:pk>/', ProxyResourceView.as_view(), name='proxy-resource'),
 ]

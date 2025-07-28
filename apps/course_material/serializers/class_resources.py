@@ -9,4 +9,5 @@ class ClassResourceSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'class_date', 'external_link', 'download_url']
 
     def get_download_url(self, obj):
-        return obj.get_presigned_url()
+        request = self.context.get('request')
+        return request.build_absolute_uri(f'/api/v1/proxy/resource/{obj.id}/')

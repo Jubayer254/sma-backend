@@ -3,8 +3,7 @@ from course_material.models.base_model import BaseModel
 from course_material.models.course import Batch
 from urllib.parse import urlparse, unquote
 from django.conf import settings
-import boto3
-from botocore.config import Config
+from course_material.minio_backend import get_s3_client
 
 class ClassResource(BaseModel):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='resources')
@@ -22,25 +21,6 @@ class ClassResource(BaseModel):
             key_part = parsed.path.split('/browser/spark/')[-1]
             self.object_key = unquote(key_part)
         super().save(*args, **kwargs)
-
-    def get_presigned_url(self, expires=3600):
-        if not self.object_key:
-            return None
-        s3 = boto3.client(
-            's3',
-            endpoint_url=settings.MINIO_ENDPOINT,
-            aws_access_key_id=settings.MINIO_ACCESS_KEY,
-            aws_secret_access_key=settings.MINIO_SECRET_KEY,
-        )
-        try:
-            return s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': settings.MINIO_BUCKET_NAME, 'Key': self.object_key},
-                ExpiresIn=expires,
-                config=Config(signature_version='s3v4')
-            )
-        except Exception:
-            return None
 
     def __str__(self):
         return f"{self.batch} - {self.title}"

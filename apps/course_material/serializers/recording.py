@@ -2,11 +2,12 @@ from rest_framework import serializers
 from course_material.models.recording import Recording
 
 class RecordingSerializer(serializers.ModelSerializer):
-    download_url = serializers.SerializerMethodField()
+    stream_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Recording
-        fields = ['id', 'title', 'description', 'class_date', 'download_url']
+        fields = ['id', 'title', 'description', 'class_date', 'stream_url']
 
-    def get_download_url(self, obj):
-        return obj.get_presigned_url()
+    def get_stream_url(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(f'/api/v1/proxy/recording/{obj.id}/')

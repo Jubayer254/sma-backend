@@ -29,7 +29,6 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),  # User routes
     path('auth/', include('djoser.urls.jwt')),  # JWT endpoints
     path('api/', include('course_material.urls')),  # Course material API
-    path('test/', views.index, name='test'),
 ]
 
 urlpatterns += [
