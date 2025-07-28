@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Plyr Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Class Recording</title>
 
-  <!-- Plyr CSS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 
   <style>
@@ -13,9 +12,8 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f9f9f9;
+      background-color: #f4f6f8;
     }
-
     .wrapper {
       display: flex;
       justify-content: center;
@@ -24,28 +22,21 @@
       flex-direction: column;
       padding: 20px;
     }
-
     .video-container {
       width: 100%;
       max-width: 700px;
-      background-color: #ffffff;
+      background: #fff;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       padding: 20px;
     }
-
     .video-title {
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
+      font-weight: 600;
       margin-bottom: 15px;
-      color: #333;
+      color: #222;
     }
-
-    video {
-      width: 100%;
-      border-radius: 8px;
-    }
-
     .video-container .plyr {
       border-radius: 8px;
       overflow: hidden;
@@ -56,33 +47,30 @@
 
   <div class="wrapper">
     <div class="video-container">
-      <div class="video-title">Course Demo Video</div>
+      <div class="video-title">Class Recording</div>
       <video id="player" controls crossorigin playsinline>
-        <source src="http://localhost:8000/api/v1/proxy/demo-video/1/" type="video/mp4" />
+        <!-- source will be set by JS -->
       </video>
     </div>
   </div>
 
-  <!-- Plyr JS -->
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-
   <script>
     const player = new Plyr('#player', {
       controls: [
-        'play-large', // Big play button in center
-        'rewind',     // ⏪ 10s back
-        'play',       // ▶️
-        'fast-forward', // ⏩ 10s forward
-        'progress',   // Timeline
-        'current-time',
-        'mute',
-        'volume',
-        'captions',
-        'settings',
-        'fullscreen'
+        'play-large', 'rewind', 'play', 'fast-forward',
+        'progress', 'current-time', 'mute', 'volume',
+        'captions', 'settings', 'fullscreen'
       ],
-      seekTime: 10 // ⏪⏩ 10-second skip
+      seekTime: 10
     });
+
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzMwMDY0LCJpYXQiOjE3NTM3MjgyNjQsImp0aSI6IjlhYjExNTc2MGYzZjQyNWNiMDI5YmE5ZmE4ZjdjNGZhIiwidXNlcl9pZCI6Mn0.owxF1oT6exSpxHoPyy3cqeTgtLsTXptyuNlLTi0yxU4';  // Replace with your real token
+    const recordingId = 2;
+
+    const videoElement = document.getElementById('player');
+    videoElement.src = `http://localhost:8000/api/v1/proxy/recording/${recordingId}/?token=${token}`;
   </script>
+
 </body>
 </html>

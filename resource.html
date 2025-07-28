@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Resource Download</title>
+</head>
+<body>
+  <h2>Download Protected Resource</h2>
+  <button id="downloadBtn">Download Resource</button>
+
+  <script>
+    const downloadUrl = 'http://localhost:8000/api/v1/proxy/resource/1/';
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzMwMDY0LCJpYXQiOjE3NTM3MjgyNjQsImp0aSI6IjlhYjExNTc2MGYzZjQyNWNiMDI5YmE5ZmE4ZjdjNGZhIiwidXNlcl9pZCI6Mn0.owxF1oT6exSpxHoPyy3cqeTgtLsTXptyuNlLTi0yxU4';
+
+    document.getElementById('downloadBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch(downloadUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to download file: ' + response.status);
+        }
+
+        const blob = await response.blob();
+        const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'resource-file';
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+      } catch (error) {
+        console.error('Download failed:', error);
+        alert('Failed to download file.');
+      }
+    });
+  </script>
+</body>
+</html>
